@@ -55,6 +55,11 @@ command.cwd = function(so, dir) {
 	so.write('250 Directry successfully changed.\r\n');
 };
 
+command.cdup = function(so) {
+	so.app.cwd = path.join(so.app.cwd, '..');
+	so.write('250 Directry successfully changed.\r\n');
+};
+
 command.pasv = function(so, args) {
 	if (!so.app.dil) {
 		so.app.dil = net.createServer(function(conn) {
