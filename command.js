@@ -78,78 +78,79 @@ command.pasv = function(so, args) {
 command.list = function(so, args) {
 	if (!so.app.di) {
 		console.log('error');
-	} else {
-		so.write('150 Here comes the directory listing.\r\n');
-		// list directory
-		var fileList = function(dir) {
-			console.log('listing directory :' + dir);
-			var line = '';
-			var stat;
-			fs.readdirSync(dir).forEach(function(f) {
-				try {
-					stat = fs.lstatSync(path.join(dir, f));
-				} catch (e) {
-					console.log('list:' + e);
-					return;
-				}
-				// file type
-				if (stat.isFile()) {
-					line += '-';
-				} else if (stat.isDirectory()) {
-					line += 'd';
-				} else if (stat.isBlockDevice()) {
-					line += 'b';
-				} else if (stat.isCharacterDevice()) {
-					line += 'c';
-				} else if (stat.isSymbolicLink()) {
-					line += 'l';
-				} else if (stat.isFIFO()) {
-					line += 'f';
-				} else if (stat.isSocket()) {
-					line += 's';
-				}
-				// file mode
-				var mask = {
-					00: '---',
-					02: '-w-',
-					01: '--x',
-					03: '-wx',
-					06: 'rw-',
-					05: 'r-x',
-					07: 'rwx',
-				};
-				line += mask[stat.mode >> 16 & 0xF];
-				line += mask[stat.mode >> 8 & 0xF];
-				line += mask[stat.mode & 0xF];
-				line += ' ';
-				// node link
-				line += stat.nlink + ' ';
-				// user, group
-				line += stat.uid + ' ' + stat.gid + ' ';
-				// size
-				line += stat.size + ' ';
-				// date 
-				line += [
-					'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
-					'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
-				][stat.mtime.month] + ' ' + stat.mtime.day + ' ';
-				// time
-				line += stat.mtime.hour + ':' + stat.mtime.minute + ' ';
-				// filename
-				line += f + '\n';
-			});
-			return line;
-		}(path.join(so.app.vroot, so.app.cwd), '');
-		// end list directory
-		so.app.di.write(fileList, function(err) {
-			if (!err) {
-				so.app.di.end();
-				so.write('226 Directory send OK.\r\n');
-			} else {
-				// ??
-			}
-		});
+		return;
 	}
+
+	so.write('150 Here comes the directory listing.\r\n');
+	// list directory
+	var fileList = function(dir) {
+		console.log('listing directory :' + dir);
+		var line = '';
+		var stat;
+		fs.readdirSync(dir).forEach(function(f) {
+			try {
+				stat = fs.lstatSync(path.join(dir, f));
+			} catch (e) {
+				console.log('list:' + e);
+				return;
+			}
+			// file type
+			if (stat.isFile()) {
+				line += '-';
+			} else if (stat.isDirectory()) {
+				line += 'd';
+			} else if (stat.isBlockDevice()) {
+				line += 'b';
+			} else if (stat.isCharacterDevice()) {
+				line += 'c';
+			} else if (stat.isSymbolicLink()) {
+				line += 'l';
+			} else if (stat.isFIFO()) {
+				line += 'f';
+			} else if (stat.isSocket()) {
+				line += 's';
+			}
+			// file mode
+			var mask = {
+				00: '---',
+				02: '-w-',
+				01: '--x',
+				03: '-wx',
+				06: 'rw-',
+				05: 'r-x',
+				07: 'rwx',
+			};
+			line += mask[stat.mode >> 16 & 0xF];
+			line += mask[stat.mode >> 8 & 0xF];
+			line += mask[stat.mode & 0xF];
+			line += ' ';
+			// node link
+			line += stat.nlink + ' ';
+			// user, group
+			line += stat.uid + ' ' + stat.gid + ' ';
+			// size
+			line += stat.size + ' ';
+			// date 
+			line += [
+				'Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+				'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'
+			][stat.mtime.month] + ' ' + stat.mtime.day + ' ';
+			// time
+			line += stat.mtime.hour + ':' + stat.mtime.minute + ' ';
+			// filename
+			line += f + '\n';
+		});
+		return line;
+	}(path.join(so.app.vroot, so.app.cwd), '');
+	// end list directory
+	so.app.di.write(fileList, function(err) {
+		if (!err) {
+			so.app.di.end();
+			so.write('226 Directory send OK.\r\n');
+		} else {
+			// ??
+		}
+	});
 };
 
 command.retr = function(so, filename) {
